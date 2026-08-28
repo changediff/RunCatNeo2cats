@@ -31,7 +31,7 @@ public struct AppState: Sendable {
     public var customMetricsObservers = [UUID: Task<Void, Never>]()
     public var customMetricsConfigurationChanges = AsyncStreamBundle<Void>()
     public var runnerBundleLists = AsyncStreamBundle<[RunnerBundle]>()
-    public var runnerBundles = AsyncStreamBundle<RunnerBundle>()
+    public var runnerBundles = AsyncStreamBundle<[RunnerBundle]>()
     public var runnerSpeeds = AsyncStreamBundle<Float>()
 
     init(

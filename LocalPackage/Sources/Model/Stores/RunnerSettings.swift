@@ -73,7 +73,7 @@ public final class RunnerSettings: Composable {
         case let .flipHorizontallyToggleSwitched(isOn):
             isFlippedHorizontally = isOn
             userDefaultsRepository.isFlippedHorizontally = isOn
-            runnerService.resendCurrentRunnerBundle()
+            runnerService.resendCurrentRunnerBundles()
 
         case let .customRunnerSettings(.errorOccurred(error)):
             self.error = error

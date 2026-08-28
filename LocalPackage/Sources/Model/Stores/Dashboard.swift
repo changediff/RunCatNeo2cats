@@ -42,6 +42,7 @@ public final class Dashboard: Composable {
     public var customMetricsBundles: [CustomMetricsBundle]
     public var displayedDate: Date
     public var currentRunner: Runner?
+    public var currentSecondaryRunner: Runner?
     public var runnerBundleList: [RunnerBundle]
     public let isPreview: Bool
     public let action: (Action) async -> Void
@@ -55,6 +56,7 @@ public final class Dashboard: Composable {
         customMetricsBundles: [CustomMetricsBundle] = [],
         displayedDate: Date? = nil,
         currentRunner: Runner? = nil,
+        currentSecondaryRunner: Runner? = nil,
         runnerBundleList: [RunnerBundle] = [],
         isPreview: Bool? = nil,
         action: @escaping (Action) async -> Void =  { _ in }
@@ -73,6 +75,7 @@ public final class Dashboard: Composable {
         self.customMetricsBundles = customMetricsBundles
         self.displayedDate = displayedDate ?? dateClient.now()
         self.currentRunner = currentRunner
+        self.currentSecondaryRunner = currentSecondaryRunner
         self.runnerBundleList = runnerBundleList
         self.isPreview = isPreview ?? ProcessInfo.isPreview
         self.action = action
@@ -86,9 +89,7 @@ public final class Dashboard: Composable {
             if let metrics = appStateClient.withLock(\.metrics.latestValue) {
                 updateMetrics(metrics)
             }
-            if let runnerBundle = appStateClient.withLock(\.runnerBundles.latestValue) {
-                currentRunner = runnerBundle.runner
-            }
+            updateCurrentRunners(from: appStateClient.withLock(\.runnerBundles.latestValue) ?? [])
             runnerBundleList = appStateClient.withLock(\.runnerBundleLists.latestValue) ?? []
             task?.cancel()
             task = Task.immediate { [weak self, appStateClient] in
@@ -102,7 +103,7 @@ public final class Dashboard: Composable {
                     group.addImmediateTask {
                         let stream = appStateClient.withLock(\.runnerBundles.stream)
                         for await value in stream {
-                            self?.updateCurrentRunner(from: value)
+                            self?.updateCurrentRunners(from: value)
                         }
                     }
                     group.addImmediateTask {
@@ -121,8 +122,17 @@ public final class Dashboard: Composable {
         case let .runnerKindPickerSelected(runner):
             guard let runner else { return }
             do {
-                try runnerService.update(runner: runner)
+                try runnerService.update(runner: runner, secondaryRunner: currentSecondaryRunner)
                 currentRunner = runner
+            } catch {
+                logService.error(.switchingRunnerFailed(error))
+            }
+
+        case let .secondaryRunnerKindPickerSelected(runner):
+            guard let currentRunner else { return }
+            do {
+                try runnerService.update(runner: currentRunner, secondaryRunner: runner)
+                currentSecondaryRunner = runner
             } catch {
                 logService.error(.switchingRunnerFailed(error))
             }
@@ -165,8 +175,9 @@ public final class Dashboard: Composable {
         customMetricsBundles = metrics.customMetricsBundles
     }
 
-    private func updateCurrentRunner(from runnerBundle: RunnerBundle) {
-        currentRunner = runnerBundle.runner
+    private func updateCurrentRunners(from runnerBundles: [RunnerBundle]) {
+        currentRunner = runnerBundles.first?.runner
+        currentSecondaryRunner = runnerBundles.count > 1 ? runnerBundles.last?.runner : nil
     }
 
     private func update(runnerBundleList: [RunnerBundle]) {
@@ -177,6 +188,7 @@ public final class Dashboard: Composable {
         case viewAppeared(String)
         case viewDisappeared
         case runnerKindPickerSelected(Runner?)
+        case secondaryRunnerKindPickerSelected(Runner?)
         case settingsButtonTapped
         case activityMonitorButtonTapped
         case aboutButtonTapped(AttributedString)

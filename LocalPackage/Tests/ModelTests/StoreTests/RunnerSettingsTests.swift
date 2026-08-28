@@ -32,10 +32,10 @@ struct RunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_flipHorizontallyToggleSwitched_persists_and_resends_current_bundle() async {
+    func send_flipHorizontallyToggleSwitched_persists_and_resends_current_bundles() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
-        let bundle = RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))
-        appState.withLock { $0.runnerBundles.send(bundle) }
+        let bundles = [RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))]
+        appState.withLock { $0.runnerBundles.send(bundles) }
         let recorder = makeSetRecorder()
         let sut = RunnerSettings(.testDependencies(
             appStateClient: .testDependency(appState),
@@ -44,7 +44,7 @@ struct RunnerSettingsTests {
         await sut.send(.flipHorizontallyToggleSwitched(true))
         #expect(sut.isFlippedHorizontally)
         #expect(recorder.lock.withLock(\.self) == ["set: IS_FLIPPED_HORIZONTALLY = true"])
-        #expect(appState.withLock(\.runnerBundles.latestValue) == bundle)
+        #expect(appState.withLock(\.runnerBundles.latestValue) == bundles)
     }
 
     @MainActor @Test

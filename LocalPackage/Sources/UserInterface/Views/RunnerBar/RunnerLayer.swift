@@ -42,7 +42,7 @@ final class RunnerLayer: CALayer {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setFrames(_ frames: [NSImage], _ isTemplate: Bool) {
+    func setFrames(_ frames: [NSImage], _ isTemplate: Bool, xOffset: CGFloat) {
         let size = frames.first?.alignmentRect.size ?? .zero
         keyFrameAnimation.values = frames
         keyFrameAnimation.duration = Double(frames.count) / 2.0
@@ -50,7 +50,15 @@ final class RunnerLayer: CALayer {
         CATransaction.setDisableActions(true)
         removeAllAnimations()
         maskLayer.removeAllAnimations()
-        frame = CGRect(origin: CGPoint(x: gap, y: 2.0), size: size)
+        defer {
+            CATransaction.commit()
+        }
+        guard !frames.isEmpty else {
+            isHidden = true
+            return
+        }
+        isHidden = false
+        frame = CGRect(origin: CGPoint(x: gap + xOffset, y: 2.0), size: size)
         maskLayer.frame = CGRect(origin: .zero, size: size)
         if isTemplate {
             if mask == nil {
@@ -68,7 +76,6 @@ final class RunnerLayer: CALayer {
             mask = nil
             add(keyFrameAnimation, forKey: "running")
         }
-        CATransaction.commit()
     }
 
     func setColor(_ tintColor: CGColor, _ isTemplate: Bool) {

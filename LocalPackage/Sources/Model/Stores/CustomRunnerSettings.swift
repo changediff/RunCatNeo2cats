@@ -100,11 +100,9 @@ public final class CustomRunnerSettings: Composable {
             task = nil
 
         case let .deleteButtonTapped(runner):
-            guard let currentRunner = appStateClient.withLock(\.runnerBundles.latestValue)?.runner else {
-                return
-            }
+            let currentRunners = appStateClient.withLock(\.runnerBundles.latestValue)?.map(\.runner) ?? []
             do {
-                guard currentRunner != runner else {
+                guard !currentRunners.contains(runner) else {
                     throw RCNError.customRunner(.runnerInUse)
                 }
                 customRunnerBundleList.removeAll { $0.runner == runner }

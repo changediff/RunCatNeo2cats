@@ -67,17 +67,23 @@ struct RunnerBarView: View {
 #if arch(arm64)
             statusBarButton.layer?.addSublayer(backgroundLayer)
 #endif
-            let runnerLayer = RunnerLayer(gap: gap)
-            statusBarButton.layer?.addSublayer(runnerLayer)
+            let runnerLayers = [RunnerLayer(gap: gap), RunnerLayer(gap: gap)]
+            runnerLayers.forEach { statusBarButton.layer?.addSublayer($0) }
             StatusBarAppearanceBridge.shared.send(window.effectiveAppearance)
             await store.send(.viewAppeared(
                 String(describing: Self.self),
                 .init(
                     getBundleImage: { NSImage(resource: .init(name: $0, bundle: .module)) },
                     setSize: { backgroundLayer.setSize($0) },
-                    setFrames: { runnerLayer.setFrames($0, $1) },
-                    setColor: { runnerLayer.setColor($0, $1) },
-                    setSpeed: { runnerLayer.setSpeed($0) }
+                    setFrames: { index, frames, isTemplate, xOffset in
+                        runnerLayers[index].setFrames(frames, isTemplate, xOffset: xOffset)
+                    },
+                    setColor: { index, color, isTemplate in
+                        runnerLayers[index].setColor(color, isTemplate)
+                    },
+                    setSpeed: { speed in
+                        runnerLayers.forEach { $0.setSpeed(speed) }
+                    }
                 )
             ))
         }

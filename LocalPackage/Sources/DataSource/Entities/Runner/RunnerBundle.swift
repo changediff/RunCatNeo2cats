@@ -24,6 +24,10 @@ public struct RunnerBundle: Sendable, Equatable, Identifiable {
 
     public var id: Runner.ID { runner.id }
 
+    public var hasKeyFrameAnimation: Bool {
+        if case .keyFrameAnimation = displayFormat { true } else { false }
+    }
+
     public init(runner: Runner, frames: [Frame]) {
         self.runner = runner
         self.displayFormat = .keyFrameAnimation(frames)

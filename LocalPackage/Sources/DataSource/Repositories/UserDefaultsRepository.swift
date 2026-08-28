@@ -28,6 +28,17 @@ public struct UserDefaultsRepository: Sendable {
         nonmutating set { userDefaultsClient.set(newValue, .runnerID) }
     }
 
+    public var secondaryRunnerID: Runner.ID? {
+        get { userDefaultsClient.string(.secondaryRunnerID) }
+        nonmutating set {
+            if let newValue {
+                userDefaultsClient.set(newValue, .secondaryRunnerID)
+            } else {
+                userDefaultsClient.removeObject(.secondaryRunnerID)
+            }
+        }
+    }
+
     public var speedDecreasesUnderLoad: Bool {
         get { userDefaultsClient.bool(.speedDecreasesUnderLoad) }
         nonmutating set { userDefaultsClient.set(newValue, .speedDecreasesUnderLoad) }

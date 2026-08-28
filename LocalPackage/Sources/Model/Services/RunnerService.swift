@@ -47,13 +47,20 @@ struct RunnerService {
         }
     }
 
-    func update(runner: Runner) throws {
-        let frames = try runner.resourceNames().map {
-            try prepareFrame(of: runner, with: $0)
+    func update(runner: Runner, secondaryRunner: Runner? = nil) throws {
+        var runners = [runner]
+        if let secondaryRunner {
+            runners.append(secondaryRunner)
         }
-        let runnerBundle = RunnerBundle(runner: runner, frames: frames)
+        let runnerBundles = try runners.map { runner in
+            RunnerBundle(
+                runner: runner,
+                frames: try runner.resourceNames().map { try prepareFrame(of: runner, with: $0) }
+            )
+        }
         userDefaultsRepository.runnerID = runner.id
-        appStateClient.send(\.runnerBundles, runnerBundle)
+        userDefaultsRepository.secondaryRunnerID = secondaryRunner?.id
+        appStateClient.send(\.runnerBundles, runnerBundles)
     }
 
     func loadRunnerBundleList() {
@@ -70,20 +77,26 @@ struct RunnerService {
     }
 
     func setup() throws {
-        let runnerID = userDefaultsRepository.runnerID
-        let runner = if let kind = RunnerKind(rawValue: runnerID) {
-            Runner(kind: kind)
-        } else if let runner = applicationSupportRepository.loadCustomRunner(of: runnerID) {
-            runner
-        } else {
-            Runner.default
-        }
+        let runner = resolveRunner(id: userDefaultsRepository.runnerID) ?? .default
+        let secondaryRunner = userDefaultsRepository.secondaryRunnerID.flatMap { resolveRunner(id: $0) }
         do {
-            try update(runner: runner)
+            try update(runner: runner, secondaryRunner: secondaryRunner)
         } catch {
-            try update(runner: .default)
+            do {
+                try update(runner: runner, secondaryRunner: nil)
+            } catch {
+                try update(runner: .default, secondaryRunner: nil)
+            }
         }
         loadRunnerBundleList()
+    }
+
+    private func resolveRunner(id: Runner.ID) -> Runner? {
+        if let kind = RunnerKind(rawValue: id) {
+            Runner(kind: kind)
+        } else {
+            applicationSupportRepository.loadCustomRunner(of: id)
+        }
     }
 
     func updateRunnerSpeed(from cpuInfo: CPUInfo?) {
@@ -96,9 +109,9 @@ struct RunnerService {
         appStateClient.send(\.runnerSpeeds, speed)
     }
 
-    func resendCurrentRunnerBundle() {
-        if let runnerBundle = appStateClient.withLock(\.runnerBundles.latestValue) {
-            appStateClient.send(\.runnerBundles, runnerBundle)
+    func resendCurrentRunnerBundles() {
+        if let runnerBundles = appStateClient.withLock(\.runnerBundles.latestValue) {
+            appStateClient.send(\.runnerBundles, runnerBundles)
         }
     }
 

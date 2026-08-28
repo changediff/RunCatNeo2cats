@@ -21,7 +21,7 @@ struct RunnerServiceTests {
             }
         ))
         try sut.update(runner: Runner(kind: .cat))
-        let expected = RunnerBundle(
+        let expected = [RunnerBundle(
             runner: .default,
             frames: [
                 .preset("cat-frame-0"),
@@ -30,9 +30,40 @@ struct RunnerServiceTests {
                 .preset("cat-frame-3"),
                 .preset("cat-frame-4"),
             ]
-        )
+        )]
         #expect(appState.withLock(\.runnerBundles.latestValue) == expected)
         #expect(setCallStack.withLock(\.self) == ["set: RUNNER_ID = cat"])
+    }
+
+    @Test
+    func update_runner_with_secondary_runner_sends_both_bundles_and_stores_both_ids() throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let setCallStack = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = RunnerService(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.set = { value, key in
+                    let entry = "set: \(key) = \(value ?? "nil")"
+                    setCallStack.withLock { $0.append(entry) }
+                }
+            }
+        ))
+        try sut.update(runner: Runner(kind: .cat), secondaryRunner: Runner(kind: .dog))
+        let frames: [Frame] = (0..<5).map { .preset("dog-frame-\($0)") }
+        #expect(appState.withLock(\.runnerBundles.latestValue) == [
+            RunnerBundle(runner: .default, frames: [
+                .preset("cat-frame-0"),
+                .preset("cat-frame-1"),
+                .preset("cat-frame-2"),
+                .preset("cat-frame-3"),
+                .preset("cat-frame-4"),
+            ]),
+            RunnerBundle(runner: Runner(kind: .dog), frames: frames),
+        ])
+        #expect(setCallStack.withLock(\.self) == [
+            "set: RUNNER_ID = cat",
+            "set: SECONDARY_RUNNER_ID = dog",
+        ])
     }
 
     @Test
@@ -49,7 +80,7 @@ struct RunnerServiceTests {
             }
         ))
         try sut.update(runner: runner)
-        #expect(appState.withLock(\.runnerBundles.latestValue) == RunnerBundle(runner: runner, frames: [.custom(Data("frame".utf8))]))
+        #expect(appState.withLock(\.runnerBundles.latestValue) == [RunnerBundle(runner: runner, frames: [.custom(Data("frame".utf8))])])
     }
 
     @Test
@@ -143,12 +174,66 @@ struct RunnerServiceTests {
         let sut = RunnerService(.testDependencies(
             appStateClient: .testDependency(appState),
             userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
-                $0.string = { _ in "dog" }
+                $0.string = { $0 == String.runnerID ? "dog" : nil }
             }
         ))
         try sut.setup()
-        #expect(appState.withLock(\.runnerBundles.latestValue)?.runner == Runner(kind: .dog))
+        #expect(appState.withLock(\.runnerBundles.latestValue) == [RunnerBundle(
+            runner: Runner(kind: .dog),
+            frames: [
+                .preset("dog-frame-0"),
+                .preset("dog-frame-1"),
+                .preset("dog-frame-2"),
+                .preset("dog-frame-3"),
+                .preset("dog-frame-4"),
+            ]
+        )])
         #expect(appState.withLock(\.runnerBundleLists.latestValue)?.count == RunnerKind.allCases.count)
+    }
+
+    @Test
+    func setup_loads_secondary_runner_stored_in_user_defaults() throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let sut = RunnerService(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.string = { $0 == String.runnerID ? "dog" : "drop" }
+            }
+        ))
+        try sut.setup()
+        #expect(appState.withLock(\.runnerBundles.latestValue)?.map(\.runner) == [
+            Runner(kind: .dog),
+            Runner(kind: .drop),
+        ])
+    }
+
+    @Test
+    func setup_falls_back_to_primary_runner_when_secondary_frames_are_missing() throws {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let json = """
+            [
+              {
+                "id": "custom-runner",
+                "name": "Custom Runner",
+                "isTemplate": false,
+                "frameOrder": [0]
+              }
+            ]
+            """
+        let sut = RunnerService(.testDependencies(
+            appStateClient: .testDependency(appState),
+            dataClient: testDependency(of: DataClient.self) {
+                $0.read = { _ in Data(json.utf8) }
+            },
+            fileManagerClient: testDependency(of: FileManagerClient.self) {
+                $0.fileExists = { $0.hasSuffix("RunCatNeo/") || $0.hasSuffix("CUSTOM_RUNNERS.json") }
+            },
+            userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
+                $0.string = { $0 == String.runnerID ? "dog" : "custom-runner" }
+            }
+        ))
+        try sut.setup()
+        #expect(appState.withLock(\.runnerBundles.latestValue)?.map(\.runner) == [Runner(kind: .dog)])
     }
 
     @Test
@@ -175,14 +260,14 @@ struct RunnerServiceTests {
                 $0.fileExists = { _ in true }
             },
             userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
-                $0.string = { _ in "custom-runner" }
+                $0.string = { $0 == String.runnerID ? "custom-runner" : nil }
             }
         ))
         try sut.setup()
-        #expect(appState.withLock(\.runnerBundles.latestValue) == RunnerBundle(
+        #expect(appState.withLock(\.runnerBundles.latestValue) == [RunnerBundle(
             runner: Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0])),
             frames: [.custom(Data("frame".utf8))]
-        ))
+        )])
     }
 
     @Test
@@ -207,11 +292,11 @@ struct RunnerServiceTests {
                 $0.fileExists = { $0.hasSuffix("RunCatNeo/") || $0.hasSuffix("CUSTOM_RUNNERS.json") }
             },
             userDefaultsClient: testDependency(of: UserDefaultsClient.self) {
-                $0.string = { _ in "custom-runner" }
+                $0.string = { $0 == String.runnerID ? "custom-runner" : nil }
             }
         ))
         try sut.setup()
-        #expect(appState.withLock(\.runnerBundles.latestValue)?.runner == Runner.default)
+        #expect(appState.withLock(\.runnerBundles.latestValue)?.first?.runner == Runner.default)
     }
 
     @Test
@@ -224,7 +309,7 @@ struct RunnerServiceTests {
             }
         ))
         try sut.setup()
-        #expect(appState.withLock(\.runnerBundles.latestValue)?.runner == Runner.default)
+        #expect(appState.withLock(\.runnerBundles.latestValue)?.first?.runner == Runner.default)
     }
 
     @Test
@@ -265,12 +350,12 @@ struct RunnerServiceTests {
     }
 
     @Test
-    func resendCurrentRunnerBundle_resends_latest_bundle() async {
+    func resendCurrentRunnerBundles_resends_latest_bundles() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
-        let bundle = RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))
+        let bundle = [RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))]
         appState.withLock { $0.runnerBundles.send(bundle) }
         let sut = RunnerService(.testDependencies(appStateClient: .testDependency(appState)))
-        let received = AllocatedUnfairLock<[RunnerBundle]>(initialState: [])
+        let received = AllocatedUnfairLock<[[RunnerBundle]]>(initialState: [])
         let task = Task {
             let stream = appState.withLock(\.runnerBundles.stream)
             for await value in stream {
@@ -278,17 +363,17 @@ struct RunnerServiceTests {
             }
         }
         try? await Task.sleep(for: .milliseconds(50))
-        sut.resendCurrentRunnerBundle()
+        sut.resendCurrentRunnerBundles()
         try? await Task.sleep(for: .milliseconds(50))
         task.cancel()
         #expect(received.withLock(\.self) == [bundle, bundle])
     }
 
     @Test
-    func resendCurrentRunnerBundle_does_nothing_when_no_bundle_was_sent() {
+    func resendCurrentRunnerBundles_does_nothing_when_no_bundles_were_sent() {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let sut = RunnerService(.testDependencies(appStateClient: .testDependency(appState)))
-        sut.resendCurrentRunnerBundle()
+        sut.resendCurrentRunnerBundles()
         #expect(appState.withLock(\.runnerBundles.latestValue) == nil)
     }
 

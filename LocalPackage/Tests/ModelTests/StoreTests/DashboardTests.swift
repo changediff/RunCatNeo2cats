@@ -49,7 +49,7 @@ struct DashboardTests {
     func send_viewAppeared_loads_current_runner_and_runner_bundle_list_then_observes_streams() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         appState.withLock {
-            $0.runnerBundles.send(RunnerBundle(runner: .default, frame: .preset("cat-frame-0")))
+            $0.runnerBundles.send([RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))])
             $0.runnerBundleLists.send([RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))])
         }
         let sut = Dashboard(.testDependencies(appStateClient: .testDependency(appState)))
@@ -57,12 +57,29 @@ struct DashboardTests {
         #expect(sut.currentRunner == Runner.default)
         #expect(sut.runnerBundleList.map(\.runner) == [Runner.default])
         appState.withLock {
-            $0.runnerBundles.send(RunnerBundle(runner: Runner(kind: .dog), frame: .preset("dog-frame-0")))
+            $0.runnerBundles.send([RunnerBundle(runner: Runner(kind: .dog), frame: .preset("dog-frame-0"))])
             $0.runnerBundleLists.send([RunnerBundle(runner: Runner(kind: .dog), frame: .preset("dog-frame-0"))])
         }
         await waitUntil { sut.currentRunner == Runner(kind: .dog) }
         #expect(sut.currentRunner == Runner(kind: .dog))
         #expect(sut.runnerBundleList.map(\.runner) == [Runner(kind: .dog)])
+        await sut.send(.viewDisappeared)
+    }
+
+    @MainActor @Test
+    func send_viewAppeared_loads_currentSecondaryRunner_when_two_runners_are_sent() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        appState.withLock {
+            $0.runnerBundles.send([
+                RunnerBundle(runner: .default, frame: .preset("cat-frame-0")),
+                RunnerBundle(runner: Runner(kind: .dog), frame: .preset("dog-frame-0")),
+            ])
+        }
+        let sut = Dashboard(.testDependencies(appStateClient: .testDependency(appState)))
+        await sut.send(.viewAppeared("DashboardTests"))
+        await waitUntil { sut.currentSecondaryRunner == Runner(kind: .dog) }
+        #expect(sut.currentRunner == Runner.default)
+        #expect(sut.currentSecondaryRunner == Runner(kind: .dog))
         await sut.send(.viewDisappeared)
     }
 
@@ -84,10 +101,11 @@ struct DashboardTests {
         await sut.send(.viewAppeared("DashboardTests"))
         await sut.send(.viewDisappeared)
         appState.withLock {
-            $0.runnerBundles.send(RunnerBundle(runner: .default, frame: .preset("cat-frame-0")))
+            $0.runnerBundles.send([RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))])
         }
         try? await Task.sleep(for: .milliseconds(50))
         #expect(sut.currentRunner == nil)
+        #expect(sut.currentSecondaryRunner == nil)
     }
 
     @MainActor @Test
@@ -96,7 +114,7 @@ struct DashboardTests {
         let sut = Dashboard(.testDependencies(appStateClient: .testDependency(appState)))
         await sut.send(.runnerKindPickerSelected(Runner(kind: .dog)))
         #expect(sut.currentRunner == Runner(kind: .dog))
-        #expect(appState.withLock(\.runnerBundles.latestValue)?.runner == Runner(kind: .dog))
+        #expect(appState.withLock(\.runnerBundles.latestValue)?.first?.runner == Runner(kind: .dog))
     }
 
     @MainActor @Test
@@ -113,6 +131,77 @@ struct DashboardTests {
             currentRunner: .default
         )
         await sut.send(.runnerKindPickerSelected(runner))
+        #expect(sut.currentRunner == Runner.default)
+        #expect(appState.withLock(\.runnerBundles.latestValue) == nil)
+    }
+
+    @MainActor @Test
+    func send_secondaryRunnerKindPickerSelected_sends_primary_and_secondary_bundles() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let sut = Dashboard(.testDependencies(appStateClient: .testDependency(appState)))
+        await sut.send(.runnerKindPickerSelected(Runner(kind: .cat)))
+        await sut.send(.secondaryRunnerKindPickerSelected(Runner(kind: .dog)))
+        #expect(sut.currentRunner == Runner(kind: .cat))
+        #expect(sut.currentSecondaryRunner == Runner(kind: .dog))
+        #expect(appState.withLock(\.runnerBundles.latestValue) == [
+            RunnerBundle(runner: Runner(kind: .cat), frames: [
+                .preset("cat-frame-0"),
+                .preset("cat-frame-1"),
+                .preset("cat-frame-2"),
+                .preset("cat-frame-3"),
+                .preset("cat-frame-4"),
+            ]),
+            RunnerBundle(runner: Runner(kind: .dog), frames: [
+                .preset("dog-frame-0"),
+                .preset("dog-frame-1"),
+                .preset("dog-frame-2"),
+                .preset("dog-frame-3"),
+                .preset("dog-frame-4"),
+            ]),
+        ])
+    }
+
+    @MainActor @Test
+    func send_secondaryRunnerKindPickerSelected_with_none_sends_primary_bundle_only() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let sut = Dashboard(.testDependencies(appStateClient: .testDependency(appState)))
+        await sut.send(.runnerKindPickerSelected(Runner(kind: .cat)))
+        await sut.send(.secondaryRunnerKindPickerSelected(Runner(kind: .dog)))
+        await sut.send(.secondaryRunnerKindPickerSelected(nil))
+        #expect(sut.currentSecondaryRunner == nil)
+        #expect(appState.withLock(\.runnerBundles.latestValue)?.map(\.runner) == [Runner(kind: .cat)])
+    }
+
+    @MainActor @Test
+    func send_runnerKindPickerSelected_keeps_secondary_runner() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let sut = Dashboard(.testDependencies(appStateClient: .testDependency(appState)))
+        await sut.send(.runnerKindPickerSelected(Runner(kind: .cat)))
+        await sut.send(.secondaryRunnerKindPickerSelected(Runner(kind: .dog)))
+        await sut.send(.runnerKindPickerSelected(Runner(kind: .drop)))
+        #expect(sut.currentRunner == Runner(kind: .drop))
+        #expect(sut.currentSecondaryRunner == Runner(kind: .dog))
+        #expect(appState.withLock(\.runnerBundles.latestValue)?.map(\.runner) == [
+            Runner(kind: .drop),
+            Runner(kind: .dog),
+        ])
+    }
+
+    @MainActor @Test
+    func send_secondaryRunnerKindPickerSelected_keeps_current_runners_when_custom_frames_are_missing() async {
+        let runner = Runner(id: "custom-runner", name: "Custom Runner", isTemplate: false, frameOrder: .custom([0]))
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let sut = Dashboard(
+            .testDependencies(
+                appStateClient: .testDependency(appState),
+                fileManagerClient: testDependency(of: FileManagerClient.self) {
+                    $0.fileExists = { $0.hasSuffix("RunCatNeo/") }
+                }
+            ),
+            currentRunner: .default
+        )
+        await sut.send(.secondaryRunnerKindPickerSelected(runner))
+        #expect(sut.currentSecondaryRunner == nil)
         #expect(sut.currentRunner == Runner.default)
         #expect(appState.withLock(\.runnerBundles.latestValue) == nil)
     }

@@ -49,7 +49,28 @@ struct CustomRunnerSettingsTests {
     func send_deleteButtonTapped_forwards_error_when_runner_is_in_use() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let bundle = RunnerBundle(runner: customRunner, frame: .custom(Data()))
-        appState.withLock { $0.runnerBundles.send(bundle) }
+        appState.withLock { $0.runnerBundles.send([bundle]) }
+        let recorder = errorRecorder()
+        let sut = CustomRunnerSettings(
+            .testDependencies(appStateClient: .testDependency(appState)),
+            customRunnerBundleList: [bundle],
+            action: recorder.action
+        )
+        await sut.send(.deleteButtonTapped(customRunner))
+        #expect(recorder.lock.withLock(\.self) == .customRunner(.runnerInUse))
+        #expect(sut.customRunnerBundleList == [bundle])
+    }
+
+    @MainActor @Test
+    func send_deleteButtonTapped_forwards_error_when_runner_is_used_as_secondary() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let bundle = RunnerBundle(runner: customRunner, frame: .custom(Data()))
+        appState.withLock {
+            $0.runnerBundles.send([
+                RunnerBundle(runner: .default, frame: .preset("cat-frame-0")),
+                bundle,
+            ])
+        }
         let recorder = errorRecorder()
         let sut = CustomRunnerSettings(
             .testDependencies(appStateClient: .testDependency(appState)),
@@ -65,7 +86,7 @@ struct CustomRunnerSettingsTests {
     func send_deleteButtonTapped_removes_selected_runner() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         appState.withLock {
-            $0.runnerBundles.send(RunnerBundle(runner: .default, frame: .preset("cat-frame-0")))
+            $0.runnerBundles.send([RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))])
         }
         let recorder = errorRecorder()
         let sut = CustomRunnerSettings(

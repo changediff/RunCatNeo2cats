@@ -63,6 +63,27 @@ struct MenuView: View {
                     Image(systemName: "pawprint.fill")
                 }
             }
+            Picker(selection: Binding<Runner?>(
+                get: { store.currentSecondaryRunner },
+                asyncSet: { await store.send(.secondaryRunnerKindPickerSelected($0)) }
+            )) {
+                Text("none", bundle: .module)
+                    .tag(Runner?.none)
+                ForEach(store.runnerBundleList, id: \.runner) { runnerBundle in
+                    Label {
+                        Text(runnerBundle.runner.formatted)
+                    } icon: {
+                        runnerBundle.thumbnail
+                    }
+                    .tag(Optional(runnerBundle.runner))
+                }
+            } label: {
+                Label {
+                    Text("secondRunner", bundle: .module)
+                } icon: {
+                    Image(systemName: "hare.fill")
+                }
+            }
             Divider()
             SettingsLink {
                 Label {
