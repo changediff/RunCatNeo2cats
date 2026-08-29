@@ -4,7 +4,15 @@ This file provides guidance to coding agents working in this repository.
 
 ## Project
 
-RunCat Neo is a macOS menu-bar app that animates a running cat (or fish — any custom runner) in the status bar to reflect system load, with support for a second runner running alongside the primary one. Target: macOS 26.3+, built with Xcode 26.2+, Swift 6.2 (with `ExistentialAny` upcoming feature enabled).
+RunCat Neo **Twocats** is a personal fork of [RunCat Neo](https://github.com/runcat-dev/RunCatNeo) (by Kyome22 / Takuto Nakamura, forked at upstream commit `b3b1543`) — a macOS menu-bar app that animates a running cat (or any custom runner) in the status bar to reflect system load. Target: macOS 26.3+, built with Xcode 26.2+, Swift 6.2 (with `ExistentialAny` upcoming feature enabled).
+
+The fork lives at `changediff/RunCatNeo2cats` (renamed from `RunCatNeo2`; old URLs redirect via GitHub). All work happens on the `twocats` branch — `main` still sits at the upstream base and has not been merged. Fork-specific behavior:
+
+- **Two runners on screen** — the menu bar shows the primary plus an optional secondary runner, animated and tinted independently; the secondary is selectable/none-able from the status-item menu.
+- **Configurable runner gap** — 0–20 px slider (Settings → Runner → Appearance), default 3 px, persisted via `UserDefaultsRepository`.
+- **Separate bundle ID** — `com.changediff.twocats.RunCatNeo`, so it can run alongside the original (`com.kyome.Neo.RunCat`) with independent preferences. The product name (and therefore the `.app`) is `RunCatNeo2cats`; the display name stays "RunCat Neo".
+
+GitHub Pages (https://changediff.github.io/RunCatNeo2cats/) publishes from `/docs` on the `twocats` branch. ⚠️ Before merging `twocats` into `main` and deleting the branch, switch the Pages source to `main /docs` in repo settings, or the site will 404.
 
 ## Build & Test
 
@@ -43,6 +51,8 @@ Custom runners are not bundled resources — the app loads them at runtime from 
 
 Silhouette artwork should be saved with `isTemplate: true` so it follows the menu-bar tint; full-color artwork needs `isTemplate: false`. Seeding this directory is the fastest way to test runner loading without going through the settings UI.
 
+The `runners/` directory at the repository root holds raw frame assets (fishman, flash-cat, golden-cat, metal-cluster-cat) kept **local only — it is git-ignored and must not be committed or redistributed**: the golden-cat and metal-cluster-cat frames were extracted from the closed-source App Store RunCat (`com.kyome.RunCat`), so that artwork remains Kyome22's; personal use only. To harvest more runners from that app, pull the APNG Data assets out of its `LocalPackage_UserInterface.bundle/Contents/Resources/Assets.car` (one APNG per runner; read `Data Length` from `xcrun assetutil --info` to slice the PNG out of the car byte stream) and split frames with ImageIO (`CGImageSourceCreateImageAtIndex`).
+
 ## Architecture (LUCA)
 
 The codebase follows the [LUCA architecture](https://github.com/Kyome22/LUCA) — three SPM library targets with strict, one-way layering: `DataSource` (leaf) ← `Model` ← `UserInterface`. Never invert.
@@ -56,3 +66,8 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the authoritative rules — including
 ## Code Conventions
 
 `CODING_STYLE.md` defines line-level style rules (language, naming, comments, formatting, license headers). Architecture-level rules live in `ARCHITECTURE.md`. Contribution process rules (one PR per concern, PR/issue templates, review etiquette, localization policy, feature-request cost/benefit bar) live in `CONTRIBUTING.md`.
+
+## Known Follow-ups
+
+- When upstream `runcat-dev/RunCatNeo` moves ahead, add a remote `upstream` and rebase/merge `twocats` onto it occasionally.
+- If the fork is ever distributed beyond personal use: re-review signing/notarization against App Store requirements, rework the donation product IDs (`DonationProduct.swift`, `RunCatNeo.storekit`), and remove/replace the extracted runner artwork in `runners/`.
