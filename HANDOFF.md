@@ -25,6 +25,7 @@ Kyome22 / Takuto Nakamura，仓库 [runcat-dev/RunCatNeo](https://github.com/run
   3. `998bdd4` Make the gap between runners configurable（可配置间隔）
   4. `dfe115e` Change the bundle identifier to com.changediff.twocats.RunCatNeo
   5. `ade42ed` Replace the landing page with a fork introduction（GitHub Pages 介绍页）
+  6. `40bf6fc` Update repository links after the rename（仓库改名后更新 docs 链接）
 - 关键代码位置：`RunnerService.swift`（runner 解析/下发）、`RunnerBar.swift`(双帧拼接与间距)、`Dashboard.swift`（菜单 action）、`UserDefaultsRepository.swift`（`RUNNER_GAP` 等键）、`RunnerSettingsView.swift`（滑块）。
 
 ## 3. GitHub Pages
@@ -46,15 +47,15 @@ xcodebuild -project RunCatNeo.xcodeproj -scheme RunCatNeo \
   -configuration Release -derivedDataPath build/DerivedData \
   -skipPackagePluginValidation -skipMacroValidation \
   CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= build
-# 产物：build/DerivedData/Build/Products/Release/RunCatNeo.app
+# 产物：build/DerivedData/Build/Products/Release/RunCatNeo2cats.app
 ```
 
 坑：管道（如 `| tail`）会掩盖 xcodebuild 退出码，请检查日志里的 `** BUILD SUCCEEDED **` 或加 `set -o pipefail`。更多细节见 `AGENTS.md`。
 
 ## 5. 本机（Mac）当前状态
 
-- `/Applications/RunCatNeo2.app`：本 fork 安装版（新 bundle id，含全部功能）
-- `/Applications/RunCatNeo.app`：改名前手动拷贝的**旧副本**（无间隔功能、旧 bundle id），**可删**；两者可共存是刻意设计
+- `/Applications/RunCatNeo2cats.app`：本 fork 安装版（`PRODUCT_NAME=RunCatNeo2cats`，bundle id `com.changediff.twocats.RunCatNeo`，显示名仍为 RunCat Neo，ad-hoc 签名，含全部功能）
+- 旧的 `/Applications/RunCatNeo2.app`、`/Applications/RunCatNeo.app` 副本均已删除，本机只保留 `RunCatNeo2cats.app` 一个
 - 沙盒容器：`~/Library/Containers/com.changediff.twocats.RunCatNeo/`——偏好与自定义跑者都在容器内
   - 自定义跑者已播种：`…/Data/Library/Application Support/RunCatNeo/`（`CUSTOM_RUNNERS.json` + Fishman `B6626F5D-…` + Flash Cat `5C1572E5-…`，帧图为 `<id>/frame-<n>.png`）
   - 新机器/新容器需要重新播种，或通过 app 的设置界面导入
@@ -69,12 +70,12 @@ cd RunCatNeo2cats && git checkout twocats
 # 之后按第 4 节构建/测试；build/ 目录不会被 git 跟踪
 ```
 
-注意：`build/`（构建产物）和 `runners/`（fishman/flash-cat 原始 PNG 素材）**未入库**；`runners/` 素材目前只存在于旧目录 `/Users/changediff/ZCodeProject/RunCatNeo2/`，如需保留请手动拷贝。旧目录 `/Users/changediff/playground/RunCatNeo` 的工作区改动已全部由本仓库吸收，可废弃。
+注意：`build/`（构建产物）和 `runners/`（fishman/flash-cat 原始 PNG 素材）**未入库**（`.gitignore` 已加条目）；`runners/` 素材已拷贝到本仓库目录，旧目录 `/Users/changediff/ZCodeProject/RunCatNeo2/` 仍有一份可随时废弃。旧目录 `/Users/changediff/playground/RunCatNeo` 的工作区改动已全部由本仓库吸收，可废弃。
 
 ## 7. 后续待办
 
 - [ ] 决定 `twocats` → `main` 的合并时机；合并后切换 Pages 发布源（见第 3 节）
-- [ ] 可选：给 `build/`、`runners/` 加 `.gitignore` 条目或入库 `runners/` 素材
+- [ ] 可选：把 `runners/` 素材入库（现已拷贝到本仓库目录并加入 `.gitignore`，如需版本保护可 `git add -f runners/`）
 - [ ] 若未来要分发：按 App Store 要求重审签名/公证，内购商品 ID（`DonationProduct.swift`、`RunCatNeo.storekit`）需重新规划
 - [ ] 上游有更新时，添加 remote `upstream → runcat-dev/RunCatNeo` 择期 rebase/merge
 
