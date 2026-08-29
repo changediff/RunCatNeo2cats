@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1C9FF5302F17E9A800362D48"
-               BuildableName = "RunCatNeo.app"
+               BuildableName = "RunCatNeo2cats.app"
                BlueprintName = "RunCatNeo"
                ReferencedContainer = "container:RunCatNeo.xcodeproj">
             </BuildableReference>
@@ -51,7 +51,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1C9FF5302F17E9A800362D48"
-            BuildableName = "RunCatNeo.app"
+            BuildableName = "RunCatNeo2cats.app"
             BlueprintName = "RunCatNeo"
             ReferencedContainer = "container:RunCatNeo.xcodeproj">
          </BuildableReference>
@@ -85,7 +85,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1C9FF5302F17E9A800362D48"
-            BuildableName = "RunCatNeo.app"
+            BuildableName = "RunCatNeo2cats.app"
             BlueprintName = "RunCatNeo"
             ReferencedContainer = "container:RunCatNeo.xcodeproj">
          </BuildableReference>

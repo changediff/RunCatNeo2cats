@@ -15,7 +15,7 @@
 /* Begin PBXFileReference section */
 		1C0CC4242FAA2AC7006AA17B /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		1C0CC4372FAA37D9006AA17B /* UnitTest.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = UnitTest.xctestplan; sourceTree = "<group>"; };
-		1C9FF5312F17E9A800362D48 /* RunCatNeo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RunCatNeo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1C9FF5312F17E9A800362D48 /* RunCatNeo2cats.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RunCatNeo2cats.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C9FF5492F17FBD000362D48 /* LocalPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalPackage; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -65,7 +65,7 @@
 		1C9FF5322F17E9A800362D48 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1C9FF5312F17E9A800362D48 /* RunCatNeo.app */,
+				1C9FF5312F17E9A800362D48 /* RunCatNeo2cats.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -99,7 +99,7 @@
 				1C9FF54B2F17FBEE00362D48 /* UserInterface */,
 			);
 			productName = RunCatNeo;
-			productReference = 1C9FF5312F17E9A800362D48 /* RunCatNeo.app */;
+			productReference = 1C9FF5312F17E9A800362D48 /* RunCatNeo2cats.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -329,7 +329,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.changediff.twocats.RunCatNeo;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = RunCatNeo2cats;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -378,7 +378,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.changediff.twocats.RunCatNeo;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = RunCatNeo2cats;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
