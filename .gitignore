@@ -13,3 +13,7 @@ xcuserdata/
 # Test
 DerivedData/
 TestResults/
+
+# Build artifacts & local runner assets (not tracked; see HANDOFF.md)
+build/
+runners/
