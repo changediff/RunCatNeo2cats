@@ -14,5 +14,6 @@ xcuserdata/
 DerivedData/
 TestResults/
 
-# Build artifacts (not tracked; see HANDOFF.md)
+# Build artifacts & local-only runner assets (see AGENTS.md)
 build/
+runners/
