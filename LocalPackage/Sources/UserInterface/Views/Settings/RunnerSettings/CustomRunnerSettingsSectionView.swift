@@ -41,7 +41,6 @@ struct CustomRunnerSettingsSectionView: View {
                     }
                 }
             }
-            .frame(height: 200)
             HStack {
                 Spacer()
                 Button {

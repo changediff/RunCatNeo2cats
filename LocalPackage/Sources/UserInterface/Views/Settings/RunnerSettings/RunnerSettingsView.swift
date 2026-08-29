@@ -55,6 +55,7 @@ struct RunnerSettingsView: View {
             CustomRunnerSettingsSectionView(store: store.customRunnerSettings)
         }
         .formStyle(.grouped)
+        .frame(minHeight: 460, maxHeight: 620)
         .alert(
             isPresented: $store.showingAlert,
             error: store.error,
