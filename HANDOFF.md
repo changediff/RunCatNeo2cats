@@ -57,7 +57,7 @@ xcodebuild -project RunCatNeo.xcodeproj -scheme RunCatNeo \
 - `/Applications/RunCatNeo2cats.app`：本 fork 安装版（`PRODUCT_NAME=RunCatNeo2cats`，bundle id `com.changediff.twocats.RunCatNeo`，显示名仍为 RunCat Neo，ad-hoc 签名，含全部功能）
 - 旧的 `/Applications/RunCatNeo2.app`、`/Applications/RunCatNeo.app` 副本均已删除，本机只保留 `RunCatNeo2cats.app` 一个
 - 沙盒容器：`~/Library/Containers/com.changediff.twocats.RunCatNeo/`——偏好与自定义跑者都在容器内
-  - 自定义跑者已播种：`…/Data/Library/Application Support/RunCatNeo/`（`CUSTOM_RUNNERS.json` + Fishman `B6626F5D-…` + Flash Cat `5C1572E5-…`，帧图为 `<id>/frame-<n>.png`）
+  - 自定义跑者已播种：`…/Data/Library/Application Support/RunCatNeo/`（`CUSTOM_RUNNERS.json` + Fishman + Flash Cat + Golden Cat + Metal Cluster Cat，帧图为 `<id>/frame-<n>.png`）
   - 新机器/新容器需要重新播种，或通过 app 的设置界面导入
 - 可清理项：home 下 `~/Library/Application Support/RunCatNeo/`（沙盒 app 读不到，无效残留）；孤儿容器 `~/Library/Containers/com.kyome.Neo.RunCat2/`（元数据受系统保护删不干净，无害）
 - `defaults read` 读不到沙盒 app 的偏好（TCC 限制），检查偏好请在 app UI 里看
@@ -70,12 +70,11 @@ cd RunCatNeo2cats && git checkout twocats
 # 之后按第 4 节构建/测试；build/ 目录不会被 git 跟踪
 ```
 
-注意：`build/`（构建产物）和 `runners/`（fishman/flash-cat 原始 PNG 素材）**未入库**（`.gitignore` 已加条目）；`runners/` 素材已拷贝到本仓库目录，旧目录 `/Users/changediff/ZCodeProject/RunCatNeo2/` 仍有一份可随时废弃。旧目录 `/Users/changediff/playground/RunCatNeo` 的工作区改动已全部由本仓库吸收，可废弃。
+注意：`build/`（构建产物）不入库；`runners/`（跑者原始 PNG 素材）**已入库**。素材来源：fishman/flash-cat 来自更早的手动提取；golden-cat（金猫）/metal-cluster-cat（金属团猫）提取自初代 RunCat（App Store 版 `com.kyome.RunCat` v12.8，闭源）bundle 内 `LocalPackage_UserInterface.bundle` 的 Assets.car——该 car 里每个跑者是一张 APNG（Data asset），用 ImageIO 拆帧即可，帧图版权仍属 Kyome22，仅限个人使用勿分发。旧目录 `/Users/changediff/ZCodeProject/RunCatNeo2/` 与 `/Users/changediff/playground/RunCatNeo` 均可废弃。
 
 ## 7. 后续待办
 
 - [ ] 决定 `twocats` → `main` 的合并时机；合并后切换 Pages 发布源（见第 3 节）
-- [ ] 可选：把 `runners/` 素材入库（现已拷贝到本仓库目录并加入 `.gitignore`，如需版本保护可 `git add -f runners/`）
 - [ ] 若未来要分发：按 App Store 要求重审签名/公证，内购商品 ID（`DonationProduct.swift`、`RunCatNeo.storekit`）需重新规划
 - [ ] 上游有更新时，添加 remote `upstream → runcat-dev/RunCatNeo` 择期 rebase/merge
 
