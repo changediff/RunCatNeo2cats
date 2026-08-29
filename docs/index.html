@@ -1,32 +1,202 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RunCat Neo</title>
-    <meta name="keywords" content="RunCat,macOS,cat,system,indicator,menubar,CPU" />
-    <meta name="author" content="Kyome22" />
-    <meta name="description" content="Cat living in the menubar." />
-    <meta property="og:url" content="https://runcat-dev.github.io/RunCatNeo/index.html" />
+    <title>RunCat Neo Twocats — 双猫版</title>
+    <meta name="keywords" content="RunCat,RunCat Neo,macOS,menubar,CPU,twocats,fork" />
+    <meta name="description" content="RunCat Neo 的个人修改版：菜单栏同时显示两只跑者，间距可配置。原版由 Kyome22 开发。" />
+    <meta property="og:url" content="https://changediff.github.io/RunCatNeo2/" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="RunCat Neo" />
-    <meta property="og:description" content="Cat living in the menubar." />
-    <meta property="og:site_name" content="RunCat Neo" />
-    <meta
-      property="og:image"
-      content="https://runcat-dev.github.io/RunCatNeo/images/og_thumbnail.png"
-    />
-    <link href="https://fonts.googleapis.com/css?family=Exo+2:400,400i,600,600i,700,700i" rel="stylesheet" />
-    <link rel="stylesheet" href="./style.css" />
+    <meta property="og:title" content="RunCat Neo Twocats — 双猫版" />
+    <meta property="og:description" content="RunCat Neo 的个人修改版：菜单栏同时显示两只跑者，间距可配置。" />
+    <meta property="og:image" content="https://changediff.github.io/RunCatNeo2/images/og_thumbnail.png" />
+    <style>
+      :root {
+        --bg: #0f1115;
+        --panel: #171a21;
+        --text: #e6e8ee;
+        --muted: #9aa1af;
+        --accent: #f5a623;
+        --accent2: #4ea1ff;
+        --border: #262b36;
+        --code-bg: #1d222c;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.75;
+      }
+      .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 80px; }
+      header { text-align: center; padding: 24px 0 8px; }
+      .cats { font-size: 56px; letter-spacing: 8px; }
+      h1 { font-size: 40px; margin: 12px 0 4px; font-weight: 700; }
+      h1 .neo { color: var(--accent); }
+      .subtitle { color: var(--muted); font-size: 17px; }
+      .origin {
+        margin: 36px 0 0;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, rgba(245,166,35,.09), rgba(78,161,255,.07));
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--accent);
+        border-radius: 12px;
+      }
+      .origin h2 { font-size: 18px; margin-bottom: 8px; }
+      .origin p { color: var(--muted); font-size: 15px; }
+      .origin a { color: var(--accent); font-weight: 600; text-decoration: none; }
+      .origin a:hover { text-decoration: underline; }
+      .badges { margin-top: 20px; text-align: center; }
+      .badges a {
+        display: inline-block; margin: 6px; padding: 8px 18px;
+        border: 1px solid var(--border); border-radius: 999px;
+        color: var(--text); text-decoration: none; font-size: 14px;
+        background: var(--panel);
+      }
+      .badges a:hover { border-color: var(--accent2); color: var(--accent2); }
+      .demo { display: block; margin: 36px auto 0; max-width: 640px; width: 100%; border-radius: 12px; border: 1px solid var(--border); }
+      .demo-caption { text-align: center; color: var(--muted); font-size: 13px; margin-top: 8px; }
+      section { margin-top: 52px; }
+      h2 { font-size: 26px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+      h2 .en { color: var(--muted); font-size: 15px; font-weight: 400; margin-left: 10px; }
+      .card {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: 12px; padding: 18px 22px; margin-bottom: 14px;
+      }
+      .card h3 { font-size: 17px; margin-bottom: 6px; }
+      .card h3 .tag { color: var(--accent); }
+      .card p { color: var(--muted); font-size: 15px; }
+      ul.plain { list-style: none; }
+      ul.plain li { padding: 4px 0; color: var(--muted); }
+      ul.plain li::before { content: "🐾 "; }
+      code {
+        background: var(--code-bg); border: 1px solid var(--border);
+        border-radius: 6px; padding: 2px 7px; font-size: 13.5px;
+        font-family: "SF Mono", Menlo, Consolas, monospace;
+      }
+      pre {
+        background: var(--code-bg); border: 1px solid var(--border);
+        border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin: 14px 0;
+      }
+      pre code { background: none; border: none; padding: 0; font-size: 13px; line-height: 1.6; }
+      table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14.5px; }
+      th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+      th { color: var(--text); }
+      td { color: var(--muted); }
+      footer {
+        margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--border);
+        color: var(--muted); font-size: 13.5px; text-align: center;
+      }
+      footer a { color: var(--accent2); text-decoration: none; }
+      footer a:hover { text-decoration: underline; }
+      a { color: var(--accent2); }
+    </style>
   </head>
   <body>
-    <div id="content"></div>
-    <script type="module">
-      import { loadMarkdown } from "https://hacknock.github.io/lobsterjs/lobster.js";
-      const language = new URLSearchParams(location.search).get("lang") === "ja" ? "ja" : "en";
-      document.documentElement.lang = language;
-      const source = language === "ja" ? "./content.ja.md" : "./content.md";
-      loadMarkdown(source, document.getElementById("content"));
-    </script>
+    <div class="wrap">
+      <header>
+        <div class="cats">🐈‍⬛🐈</div>
+        <h1>RunCat Neo <span class="neo">Twocats</span></h1>
+        <p class="subtitle">菜单栏里的双猫版 —— RunCat Neo 的个人需求修改版</p>
+      </header>
+
+      <div class="origin">
+        <h2>🐾 本项目是 RunCat Neo 的非官方修改版，原版在这里</h2>
+        <p>
+          RunCat Neo 由 <strong>Kyome22（Takuto Nakamura）</strong>开发，是一只跟随 CPU
+          负载在菜单栏奔跑的猫。全部核心设计、代码与创意均属于原作者，本仓库仅按个人需求做了少量修改。
+        </p>
+        <p style="margin-top: 10px">
+          原版官网：<a href="https://runcat-dev.github.io/RunCatNeo/" target="_blank" rel="noopener">https://runcat-dev.github.io/RunCatNeo/</a>
+          <br />
+          原版仓库：<a href="https://github.com/runcat-dev/RunCatNeo" target="_blank" rel="noopener">https://github.com/runcat-dev/RunCatNeo</a>
+          ｜ 支持原作者请使用原版
+        </p>
+      </div>
+
+      <div class="badges">
+        <a href="https://github.com/changediff/RunCatNeo2" target="_blank" rel="noopener">📦 本仓库</a>
+        <a href="https://github.com/changediff/RunCatNeo2/tree/twocats" target="_blank" rel="noopener">🌿 twocats 分支</a>
+        <a href="https://runcat-dev.github.io/RunCatNeo/" target="_blank" rel="noopener">🏠 原版官网</a>
+        <a href="https://github.com/runcat-dev/RunCatNeo" target="_blank" rel="noopener">⭐ 原版仓库</a>
+      </div>
+
+      <img class="demo" src="./images/en/demo.gif" alt="RunCat Neo 菜单栏动画演示" />
+      <p class="demo-caption">（动画演示来自原版项目）</p>
+
+      <section id="changes">
+        <h2>这个版本改了什么<span class="en">What this fork changes</span></h2>
+        <div class="card">
+          <h3><span class="tag">🐈‍⬛🐈</span> 双跑者同屏（twocats）</h3>
+          <p>
+            菜单栏可同时显示两只跑者：主跑者 + 第二跑者，各自独立播放关键帧动画、独立按素材类型着色（剪影跟随菜单栏深浅模式，彩色保留原色）。第二跑者可在菜单栏菜单里随时选择或取消（None）。
+          </p>
+        </div>
+        <div class="card">
+          <h3><span class="tag">↔️</span> 跑者间距可配置</h3>
+          <p>
+            两只跑者之间的间隔不再写死，可在 设置 → 跑者 → 外观 里用滑块调整（0–20px，默认
+            3px），拖动即时生效并持久化。
+          </p>
+        </div>
+        <div class="card">
+          <h3><span class="tag">🔀</span> 可与原版共存</h3>
+          <p>
+            使用独立 bundle id（<code>com.changediff.twocats.RunCatNeo</code>），与原版
+            RunCat Neo（或 App Store 版）互不冲突，可同时运行、偏好设置彼此隔离。
+          </p>
+        </div>
+        <div class="card">
+          <h3><span class="tag">✅</span> 其余与原版保持一致</h3>
+          <p>
+            CPU 负载动画与速度联动、系统指标条、自定义指标、自定义跑者（编辑器 /
+            素材导入）等功能全部继承自原版。内置本地化（10 种语言）在新增文案处同步补齐。
+          </p>
+        </div>
+      </section>
+
+      <section id="build">
+        <h2>自己构建<span class="en">Build</span></h2>
+        <ul class="plain">
+          <li>要求：macOS 26.3+，Xcode 26.2+，Swift 6.2</li>
+          <li>无签名证书时使用 ad-hoc 签名即可本地运行（无需描述文件）</li>
+        </ul>
+        <pre><code>xcodebuild -project RunCatNeo.xcodeproj -scheme RunCatNeo \
+  -configuration Release -derivedDataPath build/DerivedData \
+  -skipPackagePluginValidation -skipMacroValidation \
+  CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= build</code></pre>
+        <p style="color: var(--muted); font-size: 14.5px">
+          构建产物在 <code>build/DerivedData/Build/Products/Release/RunCatNeo.app</code>，直接拷入
+          「应用程序」文件夹即可。更多开发约定见仓库中的 <code>AGENTS.md</code> 与 <code>ARCHITECTURE.md</code>。
+        </p>
+      </section>
+
+      <section id="compare">
+        <h2>与原版的差异一览<span class="en">Diff at a glance</span></h2>
+        <table>
+          <tr><th>能力</th><th>原版 RunCat Neo</th><th>本版本（Twocats）</th></tr>
+          <tr><td>菜单栏跑者数量</td><td>1 只</td><td>1–2 只（可同时显示）</td></tr>
+          <tr><td>双跑者间距</td><td>—</td><td>0–20px 可配置，默认 3px</td></tr>
+          <tr><td>Bundle ID</td><td><code>com.kyome.Neo.RunCat</code></td><td><code>com.changediff.twocats.RunCatNeo</code></td></tr>
+          <tr><td>与原版同时运行</td><td>—</td><td>支持</td></tr>
+          <tr><td>其余功能</td><td colspan="2">一致（继承自原版）</td></tr>
+        </table>
+      </section>
+
+      <section id="license">
+        <h2>许可与致谢<span class="en">License &amp; Credits</span></h2>
+        <ul class="plain">
+          <li>原版 RunCat Neo 及本 fork 均以 <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache License 2.0</a> 发布。</li>
+          <li>感谢 <strong>Kyome22（Takuto Nakamura）</strong>创造的优秀开源项目，本页面中的演示动图等素材亦来自原版仓库。</li>
+          <li>本仓库为个人学习与自用目的的修改版，不提供官方支持；问题反馈请到 <a href="https://github.com/changediff/RunCatNeo2/issues" target="_blank" rel="noopener">本仓库 Issues</a>，原版相关问题请前往原版仓库。</li>
+        </ul>
+      </section>
+
+      <footer>
+        RunCat Neo Twocats 是 <a href="https://runcat-dev.github.io/RunCatNeo/" target="_blank" rel="noopener">RunCat Neo</a>
+        的非官方修改版，与原作者无关联 · 原版版权归 Kyome22 所有 · 本修改版同样以 Apache-2.0 发布
+      </footer>
+    </div>
   </body>
 </html>
