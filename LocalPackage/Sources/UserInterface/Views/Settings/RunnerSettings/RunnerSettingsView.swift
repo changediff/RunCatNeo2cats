@@ -39,6 +39,16 @@ struct RunnerSettingsView: View {
                 )) {
                     Text("flipHorizontally", bundle: .module)
                 }
+                Slider(value: Binding<Double>(
+                    get: { Double(store.runnerGap) },
+                    asyncSet: { await store.send(.runnerGapSliderChanged(Int($0))) }
+                ), in: 0 ... 20, step: 1) {
+                    Text("gapBetweenRunners", bundle: .module)
+                } minimumValueLabel: {
+                    Text("0")
+                } maximumValueLabel: {
+                    Text("20")
+                }
             } header: {
                 Text("appearance", bundle: .module)
             }

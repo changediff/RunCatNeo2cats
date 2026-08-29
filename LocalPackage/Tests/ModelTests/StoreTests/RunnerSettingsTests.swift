@@ -48,6 +48,22 @@ struct RunnerSettingsTests {
     }
 
     @MainActor @Test
+    func send_runnerGapSliderChanged_persists_and_resends_current_bundles() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        let bundles = [RunnerBundle(runner: .default, frame: .preset("cat-frame-0"))]
+        appState.withLock { $0.runnerBundles.send(bundles) }
+        let recorder = makeSetRecorder()
+        let sut = RunnerSettings(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: recorder.client
+        ))
+        await sut.send(.runnerGapSliderChanged(5))
+        #expect(sut.runnerGap == 5)
+        #expect(recorder.lock.withLock(\.self) == ["set: RUNNER_GAP = 5"])
+        #expect(appState.withLock(\.runnerBundles.latestValue) == bundles)
+    }
+
+    @MainActor @Test
     func send_customRunnerSettings_errorOccurred_shows_alert() async {
         let sut = RunnerSettings(.testDependencies())
         await sut.send(.customRunnerSettings(.errorOccurred(.customRunner(.loadingFailed))))

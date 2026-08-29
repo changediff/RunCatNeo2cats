@@ -23,6 +23,11 @@ import Foundation
 public struct UserDefaultsRepository: Sendable {
     private var userDefaultsClient: UserDefaultsClient
 
+    public var runnerGap: Int {
+        get { userDefaultsClient.integer(.runnerGap) }
+        nonmutating set { userDefaultsClient.set(newValue, .runnerGap) }
+    }
+
     public var runnerID: Runner.ID {
         get { userDefaultsClient.string(.runnerID) ?? RunnerKind.cat.id }
         nonmutating set { userDefaultsClient.set(newValue, .runnerID) }
@@ -117,6 +122,7 @@ public struct UserDefaultsRepository: Sendable {
         }
         userDefaultsClient.register([
             .runnerID: RunnerKind.cat.id,
+            .runnerGap: 3,
             .speedDecreasesUnderLoad: false,
             .isFlippedHorizontally: false,
             .updateInterval: UpdateInterval.default.rawValue,

@@ -120,6 +120,7 @@ public final class RunnerBar: Composable {
             return (bundle.runner, images)
         }
         let isFlippedHorizontally = userDefaultsRepository.isFlippedHorizontally
+        let runnerGap = CGFloat(userDefaultsRepository.runnerGap)
         let isTemplate = frameSets.allSatisfy { $0.runner.isTemplate }
         let imageFrames = frameSets.map { set in
             set.images.map { image in
@@ -130,9 +131,9 @@ public final class RunnerBar: Composable {
             }
         }
         let sizes = imageFrames.map { $0.first?.size ?? .zero }
-        let offsets = frameOffsets(for: sizes)
+        let offsets = frameOffsets(for: sizes, gap: runnerGap)
         let totalSize = CGSize(
-            width: max(.zero, sizes.reduce(into: CGFloat.zero) { $0 += $1.width + 2 } - 2),
+            width: max(.zero, sizes.reduce(into: CGFloat.zero) { $0 += $1.width + runnerGap } - runnerGap),
             height: sizes.map(\.height).max() ?? .zero
         )
         icon = compositeIcon(imageFrames: imageFrames, offsets: offsets, size: totalSize)
@@ -146,13 +147,13 @@ public final class RunnerBar: Composable {
         }
     }
 
-    private func frameOffsets(for sizes: [CGSize]) -> [CGFloat] {
+    private func frameOffsets(for sizes: [CGSize], gap: CGFloat) -> [CGFloat] {
         var offsets = [CGFloat]()
         var offset = CGFloat.zero
         for size in sizes {
             offsets.append(offset)
             if size.width > .zero {
-                offset += size.width + 2.0
+                offset += size.width + gap
             }
         }
         return offsets

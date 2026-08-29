@@ -23,6 +23,7 @@ extension String {
     static let customRunners = "CUSTOM_RUNNERS"
     static let isFlippedHorizontally = "IS_FLIPPED_HORIZONTALLY"
     static let metricsBarConfiguration = "METRICS_BAR_CONFIGURATION"
+    static let runnerGap = "RUNNER_GAP"
     static let runnerID = "RUNNER_ID"
     static let secondaryRunnerID = "SECONDARY_RUNNER_ID"
     static let speedDecreasesUnderLoad = "SPEED_DECREASES_UNDER_LOAD"

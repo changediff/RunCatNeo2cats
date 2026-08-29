@@ -28,6 +28,12 @@ struct RunnerBarTests {
         )
     }
 
+    private func makeUserDefaultsClient(runnerGap: Int) -> UserDefaultsClient {
+        testDependency(of: UserDefaultsClient.self) {
+            $0.integer = { $0 == String.runnerGap ? runnerGap : 0 }
+        }
+    }
+
     @MainActor @Test
     func send_viewAppeared_applies_latest_runner_bundles_to_event_bridge() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
@@ -64,20 +70,23 @@ struct RunnerBarTests {
             ])
         }
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])
-        let sut = RunnerBar(.testDependencies(appStateClient: .testDependency(appState)))
+        let sut = RunnerBar(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: makeUserDefaultsClient(runnerGap: 3)
+        ))
         await sut.send(.viewAppeared("RunnerBarTests", makeEventBridge(recording: callStack)))
         await waitUntil { callStack.withLock(\.self).count >= 7 }
-        #expect(sut.size == CGSize(width: 22, height: 18))
-        #expect(sut.icon?.size == CGSize(width: 22, height: 18))
+        #expect(sut.size == CGSize(width: 23, height: 18))
+        #expect(sut.icon?.size == CGSize(width: 23, height: 18))
         #expect(sut.isTemplate)
         #expect(callStack.withLock(\.self) == [
             "getBundleImage: cat-frame-0",
             "getBundleImage: dog-frame-0",
-            "setSize: 22.0x18.0",
+            "setSize: 23.0x18.0",
             "setColor: 0, true",
             "setFrames: 0, 1, true, 0.0",
             "setColor: 1, true",
-            "setFrames: 1, 1, true, 12.0",
+            "setFrames: 1, 1, true, 13.0",
         ])
         await sut.send(.viewDisappeared)
     }
@@ -93,18 +102,50 @@ struct RunnerBarTests {
             ])
         }
         let callStack = AllocatedUnfairLock<[String]>(initialState: [])
-        let sut = RunnerBar(.testDependencies(appStateClient: .testDependency(appState)))
+        let sut = RunnerBar(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: makeUserDefaultsClient(runnerGap: 3)
+        ))
         await sut.send(.viewAppeared("RunnerBarTests", makeEventBridge(recording: callStack)))
         await waitUntil { callStack.withLock(\.self).count >= 7 }
         #expect(!sut.isTemplate)
         #expect(callStack.withLock(\.self) == [
             "getBundleImage: cat-frame-0",
             "getBundleImage: dog-frame-0",
-            "setSize: 22.0x18.0",
+            "setSize: 23.0x18.0",
             "setColor: 0, false",
             "setFrames: 0, 1, false, 0.0",
             "setColor: 1, true",
-            "setFrames: 1, 1, true, 12.0",
+            "setFrames: 1, 1, true, 13.0",
+        ])
+        await sut.send(.viewDisappeared)
+    }
+
+    @MainActor @Test
+    func send_viewAppeared_applies_configured_gap_between_runners() async {
+        let appState = AllocatedUnfairLock<AppState>(initialState: .init())
+        appState.withLock {
+            $0.runnerBundles.send([
+                RunnerBundle(runner: .default, frames: [.preset("cat-frame-0")]),
+                RunnerBundle(runner: Runner(kind: .dog), frames: [.preset("dog-frame-0")]),
+            ])
+        }
+        let callStack = AllocatedUnfairLock<[String]>(initialState: [])
+        let sut = RunnerBar(.testDependencies(
+            appStateClient: .testDependency(appState),
+            userDefaultsClient: makeUserDefaultsClient(runnerGap: 8)
+        ))
+        await sut.send(.viewAppeared("RunnerBarTests", makeEventBridge(recording: callStack)))
+        await waitUntil { callStack.withLock(\.self).count >= 7 }
+        #expect(sut.size == CGSize(width: 28, height: 18))
+        #expect(callStack.withLock(\.self) == [
+            "getBundleImage: cat-frame-0",
+            "getBundleImage: dog-frame-0",
+            "setSize: 28.0x18.0",
+            "setColor: 0, true",
+            "setFrames: 0, 1, true, 0.0",
+            "setColor: 1, true",
+            "setFrames: 1, 1, true, 18.0",
         ])
         await sut.send(.viewDisappeared)
     }
