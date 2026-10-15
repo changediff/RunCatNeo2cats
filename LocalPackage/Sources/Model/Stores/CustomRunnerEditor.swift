@@ -207,7 +207,7 @@ public final class CustomRunnerEditor: Composable, Identifiable {
               (10 ... 100).contains(cgImage.width) else {
             throw RCNError.customRunner(.invalidFrameImage)
         }
-        guard frameImages.count <= 30 else {
+        guard frameImages.count < 30 else {
             throw RCNError.customRunner(.frameLimitExceeded)
         }
         frameImages.append(.init(id: uuidClient.create(), cgImage: cgImage))

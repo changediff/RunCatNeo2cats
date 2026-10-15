@@ -74,6 +74,21 @@ struct CustomRunnerEditorTests {
     }
 
     @MainActor @Test
+    func send_filesDropped_forwards_error_when_frame_limit_is_reached() async {
+        let recorder = errorRecorder()
+        let frameImages = (0 ..< 30).map { _ in FrameImage.dummy() }
+        let sut = CustomRunnerEditor(
+            .testDependencies(),
+            id: .init(),
+            frameImages: frameImages,
+            action: recorder.action
+        )
+        await sut.send(.filesDropped([URL.fixture(name: "solid_red_30x36")]))
+        #expect(recorder.lock.withLock(\.self) == .customRunner(.frameLimitExceeded))
+        #expect(sut.frameImages == frameImages)
+    }
+
+    @MainActor @Test
     func send_addFrameButtonTapped_shows_file_importer() async {
         let sut = CustomRunnerEditor(.testDependencies(), id: .init())
         await sut.send(.addFrameButtonTapped)
