@@ -129,6 +129,27 @@ struct CustomRunnerEditorTests {
     }
 
     @MainActor @Test
+    func send_fileImporterResponse_imports_remaining_frame_images_after_inaccessible_one() async {
+        let recorder = errorRecorder()
+        let inaccessibleURL = URL(filePath: "/tmp/inaccessible.png")
+        let urlClient = testDependency(of: URLClient.self) {
+            $0.startAccessingSecurityScopedResource = { $0 != inaccessibleURL }
+            $0.stopAccessingSecurityScopedResource = { _ in }
+        }
+        let sut = CustomRunnerEditor(
+            .testDependencies(urlClient: urlClient),
+            id: .init(),
+            action: recorder.action
+        )
+        await sut.send(.fileImporterResponse(.success([
+            inaccessibleURL,
+            URL.fixture(name: "solid_red_30x36"),
+        ])))
+        #expect(sut.frameImages.count == 1)
+        #expect(recorder.lock.withLock(\.self) == nil)
+    }
+
+    @MainActor @Test
     func send_fileImporterResponse_failure_is_noop() async {
         let recorder = errorRecorder()
         let sut = CustomRunnerEditor(.testDependencies(), id: .init(), action: recorder.action)

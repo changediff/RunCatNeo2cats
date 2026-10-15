@@ -126,7 +126,7 @@ public final class CustomRunnerEditor: Composable, Identifiable {
         case let .fileImporterResponse(.success(urls)):
             do {
                 for url in urls {
-                    guard urlClient.startAccessingSecurityScopedResource(url) else { return }
+                    guard urlClient.startAccessingSecurityScopedResource(url) else { continue }
                     defer {
                         urlClient.stopAccessingSecurityScopedResource(url)
                     }
