@@ -26,7 +26,7 @@ struct CustomRunnerSettingsTests {
     }
 
     @MainActor @Test
-    func send_deleteButtonTapped_keeps_list_when_runner_is_in_use() async {
+    func send_deleteButtonTapped_shows_alert_and_keeps_list_when_runner_is_in_use() async {
         let appState = AllocatedUnfairLock<AppState>(initialState: .init())
         let bundle = RunnerBundle(runner: customRunner, frame: .custom(Data()))
         appState.withLock { $0.runnerBundles.send(bundle) }
@@ -36,6 +36,8 @@ struct CustomRunnerSettingsTests {
         )
         await sut.send(.deleteButtonTapped(customRunner))
         #expect(sut.customRunnerBundleList == [bundle])
+        #expect(sut.error == .customRunner(.runnerInUse))
+        #expect(sut.showingAlert)
     }
 
     @MainActor @Test
@@ -50,6 +52,8 @@ struct CustomRunnerSettingsTests {
         )
         await sut.send(.deleteButtonTapped(customRunner))
         #expect(sut.customRunnerBundleList.isEmpty)
+        #expect(sut.error == nil)
+        #expect(!sut.showingAlert)
     }
 
     @MainActor @Test
@@ -136,5 +140,13 @@ struct CustomRunnerSettingsTests {
         let sut = CustomRunnerSettings(.testDependencies())
         await sut.send(.guidanceButtonTapped)
         #expect(sut.showingGuidancePopover)
+    }
+
+    @MainActor @Test
+    func send_errorOccurred_shows_alert() async {
+        let sut = CustomRunnerSettings(.testDependencies())
+        await sut.send(.errorOccurred(.customRunner(.runnerInUse)))
+        #expect(sut.error == .customRunner(.runnerInUse))
+        #expect(sut.showingAlert)
     }
 }

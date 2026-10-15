@@ -41,6 +41,12 @@ struct CustomRunnerSettingsSectionView: View {
                     }
                 }
             }
+            .alert(
+                isPresented: $store.showingAlert,
+                error: store.error,
+                actions: { _ in },
+                message: { _ in }
+            )
             HStack {
                 Spacer()
                 Button {

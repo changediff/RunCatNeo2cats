@@ -33,6 +33,8 @@ public final class CustomRunnerSettings: Composable {
     public var customRunnerBundleList: [RunnerBundle]
     public var customRunnerEditor: CustomRunnerEditor?
     public var showingGuidancePopover: Bool
+    public var showingAlert: Bool
+    public var error: RCNError?
     public let action: (Action) async -> Void
 
     public init(
@@ -40,6 +42,8 @@ public final class CustomRunnerSettings: Composable {
         customRunnerBundleList: [RunnerBundle] = [],
         customRunnerEditor: CustomRunnerEditor? = nil,
         showingGuidancePopover: Bool = false,
+        showingAlert: Bool = false,
+        error: RCNError? = nil,
         action: @escaping (Action) async -> Void = { _ in }
     ) {
         self.appDependencies = appDependencies
@@ -50,6 +54,8 @@ public final class CustomRunnerSettings: Composable {
         self.customRunnerBundleList = customRunnerBundleList
         self.customRunnerEditor = customRunnerEditor
         self.showingGuidancePopover = showingGuidancePopover
+        self.showingAlert = showingAlert
+        self.error = error
         self.action = action
     }
 
@@ -69,6 +75,8 @@ public final class CustomRunnerSettings: Composable {
                 }
                 customRunnerBundleList.removeAll { $0.runner == runner }
                 try runnerService.delete(customRunner: runner)
+            } catch let error as RCNError {
+                await send(.errorOccurred(error))
             } catch {
                 logService.critical(.deletingCustomRunnerFailed(error))
             }
@@ -102,6 +110,10 @@ public final class CustomRunnerSettings: Composable {
 
         case .customRunnerEditor:
             return
+
+        case let .errorOccurred(error):
+            self.error = error
+            showingAlert = true
         }
     }
 
@@ -112,5 +124,6 @@ public final class CustomRunnerSettings: Composable {
         case addCustomRunnerButtonTapped
         case guidanceButtonTapped
         case customRunnerEditor(CustomRunnerEditor.Action)
+        case errorOccurred(RCNError)
     }
 }
