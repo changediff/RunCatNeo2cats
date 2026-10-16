@@ -56,12 +56,6 @@ struct RunnerSettingsView: View {
         }
         .formStyle(.grouped)
         .frame(minHeight: 460, maxHeight: 620)
-        .alert(
-            isPresented: $store.showingAlert,
-            error: store.error,
-            actions: { _ in },
-            message: { _ in }
-        )
         .task {
             await store.send(.viewAppeared(String(describing: Self.self)))
         }

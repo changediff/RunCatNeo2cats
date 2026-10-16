@@ -62,12 +62,4 @@ struct RunnerSettingsTests {
         #expect(recorder.lock.withLock(\.self) == ["set: RUNNER_GAP = 5"])
         #expect(appState.withLock(\.runnerBundles.latestValue) == bundles)
     }
-
-    @MainActor @Test
-    func send_customRunnerSettings_errorOccurred_shows_alert() async {
-        let sut = RunnerSettings(.testDependencies())
-        await sut.send(.customRunnerSettings(.errorOccurred(.customRunner(.loadingFailed))))
-        #expect(sut.error == .customRunner(.loadingFailed))
-        #expect(sut.showingAlert)
-    }
 }
