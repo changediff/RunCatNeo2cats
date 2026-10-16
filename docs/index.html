@@ -161,6 +161,7 @@
         <ul class="plain">
           <li>要求：macOS 26.3+，Xcode 26.2+，Swift 6.2</li>
           <li>无签名证书时使用 ad-hoc 签名即可本地运行（无需描述文件）</li>
+          <li>版本号自动标记为「上游版本 + twocats + 构建 commit」（如 <code>1.0.3.twocats.3531294</code>），可精确对应到源码</li>
         </ul>
         <pre><code>xcodebuild -project RunCatNeo.xcodeproj -scheme RunCatNeo \
   -configuration Release -derivedDataPath build/DerivedData \
