@@ -88,6 +88,7 @@
 				1C9FF52D2F17E9A800362D48 /* Sources */,
 				1C9FF52E2F17E9A800362D48 /* Frameworks */,
 				1C9FF52F2F17E9A800362D48 /* Resources */,
+				1C9FF5552F17FF0000362D48 /* Set twocats version suffix */,
 			);
 			buildRules = (
 			);
@@ -154,6 +155,24 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		1C9FF5552F17FF0000362D48 /* Set twocats version suffix */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Set twocats version suffix";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "commit=\"$(git -C \"$SRCROOT\" rev-parse --short HEAD)\"\nversion=\"$CURRENT_PROJECT_VERSION.twocats.$commit\"\nplist=\"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Info.plist\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $version\" \"$plist\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		1C9FF52D2F17E9A800362D48 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -203,7 +222,7 @@
 				DEVELOPMENT_TEAM = VJ5N2X84K8;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -271,7 +290,7 @@
 				DEVELOPMENT_TEAM = VJ5N2X84K8;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -327,7 +346,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.changediff.twocats.RunCatNeo;
 				PRODUCT_NAME = RunCatNeo2cats;
 				REGISTER_APP_GROUPS = YES;
@@ -376,7 +395,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.changediff.twocats.RunCatNeo;
 				PRODUCT_NAME = RunCatNeo2cats;
 				REGISTER_APP_GROUPS = YES;

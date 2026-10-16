@@ -42,6 +42,10 @@ xcodebuild -project RunCatNeo.xcodeproj -scheme RunCatNeo \
 
 When a pipeline pipes xcodebuild output (e.g. into `tail`), the pipeline exit code masks xcodebuild's — check the log for `** BUILD SUCCEEDED **` or use `set -o pipefail`.
 
+### Version scheme
+
+The displayed version is stamped automatically on every build: the "Set twocats version suffix" run-script phase (last build phase; the reason `ENABLE_USER_SCRIPT_SANDBOXING = NO`) rewrites `CFBundleShortVersionString` in the built product to `$CURRENT_PROJECT_VERSION.twocats.<short HEAD commit>` (e.g. `1.0.3.twocats.1926dee`). `CURRENT_PROJECT_VERSION` tracks the upstream release — bump it when merging a new upstream tag. Never hardcode the suffix; it follows the commit being built.
+
 ## Custom Runners
 
 Custom runners are not bundled resources — the app loads them at runtime from `~/Library/Application Support/RunCatNeo/`:
